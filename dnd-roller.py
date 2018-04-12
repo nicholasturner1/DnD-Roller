@@ -14,7 +14,7 @@ def main():
     while True:
         line = input("What would you like to roll?\n")
         result = ParseTree(line)
-        print("{expr} = {res}\n".format(expr=result, res=result.value))
+        print("{expr} = {res}\n".format(expr=result, res=result.value))        
 
 
 class ParseTree(object):
@@ -37,8 +37,30 @@ class ParseTree(object):
         Splits a string into a list of string fields, each describing a set of
         die rolls or a static value
         """
-        #simple for now
-        return fields_string.split(" ")
+        fields = []
+        curr = ""
+        for c in fields_string:
+            if c == "+":
+                assert len(fields) > 0 or curr != ""
+                fields.append(curr.strip())
+                curr = ""
+                fields.append("+")
+            elif c == "-":
+                assert len(fields) > 0 or curr != ""
+                if fields[-1] == "-":
+                    #negative number
+                    continue
+                else:
+                    fields.append(curr.strip())
+                    curr = ""
+                    fields.append("-")
+            else:
+                curr += c
+
+        if curr != "":
+            fields.append(curr.strip())
+
+        return fields
 
     def find_root_node(self, fields):
         if "+" in fields:
@@ -161,9 +183,11 @@ class ValueNode(object):
 
     def __str__(self):
         if self.isdie and self.value == self.max_value:
-            return "*{}*(d{})".format(self.value, self.max_value)
-        else:
+            return "!*{}*!(d{})".format(self.value, self.max_value)
+        elif self.isdie:
             return "{}(d{})".format(self.value, self.max_value)
+        else:
+            return "{}".format(self.value, self.max_value)
 
 
 #====================================================
@@ -174,7 +198,11 @@ def get_multiplier(field):
     match = DIE_MULT_REGEXP.match(field)
 
     if match:
-        return int(match.group(0)[:-1])
+        matchstr = match.group(0)
+        if len(matchstr) == 1: #only the 'd'
+            return 1
+        else:
+            return int(match.group(0)[:-1])
     else:
         return 1
 
