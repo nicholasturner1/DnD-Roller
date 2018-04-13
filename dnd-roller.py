@@ -2,6 +2,7 @@
 
 import re
 import random
+import string
 import operator
 
 
@@ -13,6 +14,8 @@ def main():
 
     while True:
         line = input("What would you like to roll?\n")
+        if all(map(lambda x: x in string.whitespace, line)):
+            break
         result = ParseTree(line)
         print("{expr} = {res}\n".format(expr=result, res=result.value))        
 
@@ -47,7 +50,7 @@ class ParseTree(object):
                 fields.append("+")
             elif c == "-":
                 assert len(fields) > 0 or curr != ""
-                if fields[-1] == "-":
+                if curr == "" and fields[-1] == "-":
                     #negative number
                     continue
                 else:
@@ -66,7 +69,7 @@ class ParseTree(object):
         if "+" in fields:
             return fields.index("+")
         elif "-" in fields:
-            return fields.index("-")
+            return len(fields) - 1 - list(reversed(fields)).index("-")
         else:
             assert len(fields) == 1, "No op fields w/ multiple values"
             return 0
