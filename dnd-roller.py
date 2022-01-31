@@ -50,8 +50,9 @@ class ParseTree(object):
                 fields.append("+")
             elif c == "-":
                 assert len(fields) > 0 or curr != ""
-                if curr == "" and fields[-1] == "-":
-                    #negative number
+                if curr == "" and fields[-1] in ["-+"]:
+                    # negative number
+                    raise(Exception("negative numbers not supported"))
                     continue
                 else:
                     fields.append(curr.strip())
